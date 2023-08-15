@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "dagster-rabbit-hole"
+version = "0.1.0"
+description = ""
+authors = ["Uncle Data <tomas1991@gmail.com>"]
+readme = "README.md"
+packages = [{include = "dagster_rabbit_hole"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+dagit = "^1.4.5"
+dagster-dbt = "^0.20.5"
+dagster-aws = "^0.20.5"
+dbt-core = "^1.6.0"
+dbt-duckdb = "^1.6.0"
+dagster-duckdb = "^0.20.5"
+dagster = "^1.4.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.dagster]
+module_name = "dagster_rabbit_hole"
