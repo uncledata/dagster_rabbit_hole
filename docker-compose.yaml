@@ -1,0 +1,76 @@
+version: "3.7"
+
+services:
+  # This service runs the postgres DB used by dagster for run storage, schedule storage,
+  # and event log storage.
+  postgresql:
+    image: postgres:11
+    container_name: docker_example_postgresql
+    environment:
+      POSTGRES_USER: "postgres_user"
+      POSTGRES_PASSWORD: "postgres_password"
+      POSTGRES_DB: "postgres_db"
+    networks:
+      - docker_example_network
+    expose:
+      - "5432"
+
+  web_ui:
+    build:
+      context: .
+      dockerfile: ./Dockerfile_dagster
+    platform: linux/arm64
+    entrypoint:
+      - dagit
+      - -h
+      - "0.0.0.0"
+      - -p
+      - "3000"
+      - -w
+      - workspace.yaml
+    container_name: web_ui
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    environment:
+      DAGSTER_PG_USERNAME: "postgres_user"
+      DAGSTER_PG_PASSWORD: "postgres_password"
+      DAGSTER_PG_DB: "postgres_db"
+      DAGSTER_PG_HOST: postgresql
+    volumes: # Make docker client accessible so we can terminate containers from dagit
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/io_manager_storage:/tmp/io_manager_storage
+      - /Users/tomaspeluritis/dagster_rabbit_hole:/opt/dagster/dagster_home/dagster_rabbit_hole
+    networks:
+      - docker_example_network
+    depends_on:
+      - postgresql
+
+  dagster_daemon:
+      build:
+        context: .
+        dockerfile: ./Dockerfile_dagster
+      platform: linux/arm64
+      entrypoint:
+        - dagster-daemon
+        - run
+      container_name: dagster_daemon
+      restart: on-failure
+      environment:
+        DAGSTER_PG_USERNAME: "postgres_user"
+        DAGSTER_PG_PASSWORD: "postgres_password"
+        DAGSTER_PG_DB: "postgres_db"
+        DAGSTER_PG_HOST: postgresql
+      volumes: # Make docker client accessible so we can launch containers using host docker
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /Users/tomaspeluritis/dagster_rabbit_hole:/opt/dagster/dagster_home/dagster_rabbit_hole
+      networks:
+        - docker_example_network
+      depends_on:
+        - postgresql
+
+networks:
+  docker_example_network:
+    driver: bridge
+    name: docker_example_network

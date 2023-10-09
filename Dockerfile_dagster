@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+
+# Checkout and install dagster libraries needed to run the gRPC server
+# exposing your repository to dagit and dagster-daemon, and to load
+# the DagsterInstance
+
+RUN mkdir -p /opt/dagster/dagster_home /opt/dagster/app
+
+ENV DAGSTER_HOME=/opt/dagster/dagster_home/
+
+RUN pip install poetry
+
+# Copy dagster instance YAML to $DAGSTER_HOME
+COPY dagster.yaml workspace.yaml $DAGSTER_HOME
+COPY poetry.lock poetry.lock $DAGSTER_HOME
+COPY pyproject.toml pyproject.toml
+
+RUN poetry install
+
+WORKDIR $DAGSTER_HOME
