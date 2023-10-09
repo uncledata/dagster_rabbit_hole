@@ -2,3 +2,6 @@ dagit
 dagster
 dagster-postgres
 dagster-docker
+dbt-core
+dbt-postgres
+xmltodict

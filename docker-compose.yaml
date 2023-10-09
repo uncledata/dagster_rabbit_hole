@@ -12,14 +12,14 @@ services:
       POSTGRES_DB: "postgres_db"
     networks:
       - docker_example_network
-    expose:
-      - "5432"
+    ports:
+      - "5432:5432"
 
   web_ui:
     build:
       context: .
       dockerfile: ./Dockerfile_dagster
-    platform: linux/arm64
+    platform: linux/amd64
     entrypoint:
       - dagit
       - -h
@@ -51,7 +51,7 @@ services:
       build:
         context: .
         dockerfile: ./Dockerfile_dagster
-      platform: linux/arm64
+      platform: linux/amd64
       entrypoint:
         - dagster-daemon
         - run
