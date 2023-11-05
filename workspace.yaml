@@ -1,3 +1,5 @@
 load_from:
-  # Each entry here corresponds to a service in the docker-compose file that exposes user code.
-  - python_package: dagster_rabbit_hole
+  - grpc_server:
+      host: dagster_grpc_server
+      port: 4000
+      location_name: "yellow_taxi"

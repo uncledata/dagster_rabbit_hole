@@ -10,16 +10,15 @@ services:
       POSTGRES_USER: "postgres_user"
       POSTGRES_PASSWORD: "postgres_password"
       POSTGRES_DB: "postgres_db"
+    ports:
+      - 5432:5432
     networks:
       - docker_example_network
-    ports:
-      - "5432:5432"
 
   web_ui:
     build:
       context: .
       dockerfile: ./Dockerfile_dagster
-    platform: linux/amd64
     entrypoint:
       - dagit
       - -h
@@ -33,15 +32,18 @@ services:
       - "3000"
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       DAGSTER_PG_USERNAME: "postgres_user"
       DAGSTER_PG_PASSWORD: "postgres_password"
       DAGSTER_PG_DB: "postgres_db"
       DAGSTER_PG_HOST: postgresql
+
     volumes: # Make docker client accessible so we can terminate containers from dagit
       - /var/run/docker.sock:/var/run/docker.sock
-      - /tmp/io_manager_storage:/tmp/io_manager_storage
-      - /Users/tomaspeluritis/dagster_rabbit_hole:/opt/dagster/dagster_home/dagster_rabbit_hole
+      - /Users/tomaspeluritis/dagster_rabbit_hole/dwh:/opt/dagster/dagster_home/dwh
+      - /Users/tomaspeluritis/dagster_rabbit_hole/profiles.yml:/opt/dagster/dagster_home/profiles.yml
     networks:
       - docker_example_network
     depends_on:
@@ -51,12 +53,13 @@ services:
       build:
         context: .
         dockerfile: ./Dockerfile_dagster
-      platform: linux/amd64
       entrypoint:
         - dagster-daemon
         - run
       container_name: dagster_daemon
       restart: on-failure
+      env_file:
+        - .env
       environment:
         DAGSTER_PG_USERNAME: "postgres_user"
         DAGSTER_PG_PASSWORD: "postgres_password"
@@ -64,11 +67,32 @@ services:
         DAGSTER_PG_HOST: postgresql
       volumes: # Make docker client accessible so we can launch containers using host docker
         - /var/run/docker.sock:/var/run/docker.sock
-        - /Users/tomaspeluritis/dagster_rabbit_hole:/opt/dagster/dagster_home/dagster_rabbit_hole
+        - /Users/tomaspeluritis/dagster_rabbit_hole/dwh:/opt/dagster/dagster_home/dwh
+        - /Users/tomaspeluritis/dagster_rabbit_hole/profiles.yml:/opt/dagster/dagster_home/profiles.yml
       networks:
         - docker_example_network
       depends_on:
         - postgresql
+  dagster_grpc_server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile_dagster
+    env_file:
+      - .env
+    environment:
+      DAGSTER_HOME: /opt/dagster/dagster_home
+      DAGSTER_PG_USERNAME: "postgres_user"
+      DAGSTER_PG_PASSWORD: "postgres_password"
+      DAGSTER_PG_DB: "postgres_db"
+      DAGSTER_PG_HOST: postgresql
+    volumes:
+      - /Users/tomaspeluritis/dagster_rabbit_hole/dagster-demo:/opt/dagster/dagster_home/dagster-demo
+    ports:
+      - 4000:4000
+    networks:
+      - docker_example_network
+    command: dagster api grpc --module-name dagster-demo -h 0.0.0.0 -p 4000
+    restart: unless-stopped
 
 networks:
   docker_example_network:

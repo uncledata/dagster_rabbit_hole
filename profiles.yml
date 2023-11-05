@@ -1,0 +1,14 @@
+
+dwh:
+  outputs:
+    prod:
+      type: postgres
+      threads: 4
+      host: localhost
+      port: 5432
+      user: postgres_user
+      pass: postgres_password
+      dbname: dwh
+      schema: yellow_taxi
+
+  target: prod

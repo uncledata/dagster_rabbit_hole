@@ -2,6 +2,10 @@ dagit
 dagster
 dagster-postgres
 dagster-docker
+dagster-aws
 dbt-core
 dbt-postgres
-xmltodict
+dagster-polars
+dagster-graphql
+pandas
+s3fs

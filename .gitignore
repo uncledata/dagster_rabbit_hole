@@ -1,0 +1,15 @@
+logs
+dwh/dbt_packages
+dwh/logs
+dwh/target
+
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+
+/.ruff_cache
+
+.env
+.python-version
+.DS_Store/
+*/.DS_Store/
