@@ -4,3 +4,120 @@ version: 2
 models:
   - name: fct_trips
     description: OBT approach on yellow taxi trips data
+    config:
+      meta:
+        dagster:
+          group: yellow_taxi_model
+    columns:
+      - name: vendor_name
+        description: vendrom name
+        tests:
+          - not_null
+      - name: tpep_pickup_datetime
+        description: pickup datetime
+        tests:
+          - not_null
+      - name: tpep_dropoff_datetime
+        description: dropoff datetime
+        tests:
+          - not_null
+
+      - name: passenger_count
+        description: number of passengers
+        tests:
+          - not_null
+
+      - name: trip_distance
+        description: trip distance
+        tests:
+          - not_null
+
+      - name: rate_name
+        description: rate name
+        tests:
+          - not_null
+
+      - name: store_and_fwd_flag
+        description: store and forward flag
+        tests:
+          - not_null
+
+      - name: pickup_borough
+        description: pickup borough
+        tests:
+          - not_null
+
+      - name: pickup_zone
+        description: pickup zone
+        tests:
+          - not_null
+
+      - name: pickup_service_zone
+        description: pickup service zone
+        tests:
+          - not_null
+
+      - name: dropoff_borough
+        description: dropoff borough
+        tests:
+          - not_null
+
+      - name: dropoff_zone
+        description: dropoff zone
+        tests:
+          - not_null
+
+      - name: dropoff_service_zone
+        description: dropoff service zone
+        tests:
+          - not_null
+
+      - name: payment_type_name
+        description: payment type name
+        tests:
+          - not_null
+
+      - name: fare_amount
+        description: fare amount
+        tests:
+          - not_null
+
+      - name: extra
+        description: extra
+        tests:
+          - not_null
+
+      - name: mta_tax
+        description: mta tax
+        tests:
+          - not_null
+
+      - name: tip_amount
+        description: tip amount
+        tests:
+          - not_null
+
+      - name: tolls_amount
+        description: tolls amount
+        tests:
+          - not_null
+
+      - name: improvement_surcharge
+        description: improvement surcharge
+        tests:
+          - not_null
+
+      - name: total_amount
+        description: total amount
+        tests:
+          - not_null
+
+      - name: congestion_surcharge
+        description: congestion surcharge
+        tests:
+          - not_null
+
+      - name: airport_fee
+        description: airport fee
+        tests:
+          - not_null

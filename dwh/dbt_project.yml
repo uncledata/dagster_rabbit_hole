@@ -23,7 +23,9 @@ target-path: "target"  # directory which will store compiled SQL files
 clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
-
+vars:
+  # The `start_date` variable will be accessible in all resources
+  period: '2020-01-01'
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
@@ -31,8 +33,9 @@ clean-targets:         # directories to be removed by `dbt clean`
 # In this example config, we tell dbt to build all models in the example/
 # directory as views. These settings can be overridden in the individual model
 # files using the `{{ config(...) }}` macro.
-models:
-  dwh:
-    # Config indicated by + and applies to all files under models/example/
-    example:
-      +materialized: table
+
+# Configuring tests
+tests:
+  +meta:
+    dagster:
+      asset_check: True

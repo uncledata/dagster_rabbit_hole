@@ -1,4 +1,8 @@
 version: 2
 sources:
-  - name: yellow_taxi_cleansed
-    schema: yellow_taxi_cleansed
+  - name: yellow_taxi
+    tables:
+      - name: yellow_taxi_cleansed
+        meta:
+            dagster:
+              asset_key: ["yellow_taxi_cleansed"]

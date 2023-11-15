@@ -1,3 +1,11 @@
+{{
+  config(
+    materialized = "incremental",
+    tags=["fct", "monthly"],
+    pre_hook="delete from {{ this }} where period = '{{ var('period') }}'"
+  )
+}}
+
 select
     coalesce(vendor_name, 'UNDEFINED') as vendor_name,
     tpep_pickup_datetime,
@@ -22,8 +30,8 @@ select
     total_amount,
     congestion_surcharge,
     airport_fee,
-    row_belongs_to_period
-from {{ source("yellow_taxi", "clean") }} as clean
+    clean.period
+from {{ source("yellow_taxi", "yellow_taxi_cleansed") }} as clean
 left join
     {{ ref("dim_payments") }} on dim_payments.payment_type_id = clean.payment_type
 left join {{ ref("dim_rates") }} on dim_rates.rate_code_id = clean.rate_code_id
@@ -34,3 +42,4 @@ left join
     {{ ref("dim_taxi_zones") }} as do_zone
     on do_zone.location_id = clean.do_location_id
 left join {{ ref("dim_vendor") }} on dim_vendor.vendor_id = clean.vendor_id
+where clean.period = '{{ var('period') }}'

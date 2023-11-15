@@ -1,0 +1,22 @@
+version: 2
+seeds:
+  - name: dim_payments
+    config:
+      meta:
+        dagster:
+          group: dbt_seeds
+  - name: dim_rates
+    config:
+      meta:
+        dagster:
+          group: dbt_seeds
+  - name: dim_taxi_zones
+    config:
+      meta:
+        dagster:
+          group: dbt_seeds
+  - name: dim_vendor
+    config:
+      meta:
+        dagster:
+          group: dbt_seeds
