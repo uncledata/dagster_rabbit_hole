@@ -1,14 +1,16 @@
-
 dwh:
+  target: dev
   outputs:
-    prod:
-      type: postgres
-      threads: 4
-      host: localhost
-      port: 5432
-      user: postgres_user
-      pass: postgres_password
-      dbname: dwh
-      schema: yellow_taxi
+    dev:
+      type: snowflake
+      account:  "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
 
-  target: prod
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+
+      role: "{{ env_var('SNOWFLAKE_ROLE') }}"
+      database: "{{ env_var('SNOWFLAKE_DB') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WH') }}"
+      schema: "{{ env_var('SNOWFLAKE_SCHEMA') }}"
+      threads: 5
+      client_session_keep_alive: False

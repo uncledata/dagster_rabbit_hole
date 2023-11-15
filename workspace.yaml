@@ -1,5 +1,5 @@
 load_from:
   - grpc_server:
       host: dagster_grpc_server
-      port: 4000
+      port: 4266
       location_name: "yellow_taxi"

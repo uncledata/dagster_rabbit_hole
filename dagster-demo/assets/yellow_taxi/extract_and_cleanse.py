@@ -1,7 +1,8 @@
 from dagster import asset, AssetIn, MetadataValue
 from ...helpers.commons import (
     partitions_def,
-    assets_dir_for_parquets,
+    assets_dir_for_clean_parquets,
+    assets_dir_for_raw_parquets,
     columns_names_mapping,
     redefine_dir_for_parquets,
     assets_dir_for_dirty_parquets,
@@ -14,25 +15,35 @@ import polars as pl
 import s3fs
 
 
-@asset(partitions_def=partitions_def, required_resource_keys={"s3"})
+@asset(
+    partitions_def=partitions_def,
+    required_resource_keys={"s3"},
+    compute_kind="download",
+    group_name="raw",
+)
 def yellow_tripdata_raw_parquet(context) -> str:
     partition_date_str = context.asset_partition_key_for_output()
     url = f"https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{partition_date_str}.parquet"
     r = requests.get(url)
     data = r.content
     key = redefine_dir_for_parquets(
-        assets_dir_for_parquets, file_name=f"yellow_taxi_raw_{partition_date_str}"
+        assets_dir_for_raw_parquets, file_name=f"yellow_taxi_raw_{partition_date_str}"
     )
     s3_client = context.resources.s3
     s3_client.put_object(Bucket=bucket_name, Key=key, Body=data)
     file_full_path = "s3://" + bucket_name + "/" + key
+
+    print("This is a print steatment")
+    context.log.info("This is a logging message")
     return file_full_path
 
 
 @asset(
     partitions_def=partitions_def,
-    # ins={"parquet_path": AssetIn("yellow_tripdata_raw_parquet")},
     io_manager_key="file_io_manager",
+    key_prefix=["yellow_taxi_raw"],
+    compute_kind="polars",
+    group_name="raw",
 )
 def yellow_taxi_raw_data_frame(
     context, yellow_tripdata_raw_parquet: str
@@ -63,16 +74,20 @@ def filter_polars_df(df: pl.DataFrame, is_clean: bool) -> pl.DataFrame:
 
 
 @asset(
-    partitions_def=partitions_def, ins={"raw_df": AssetIn("yellow_taxi_raw_data_frame")}
+    partitions_def=partitions_def,
+    ins={"raw_df": AssetIn("yellow_taxi_raw_data_frame")},
+    compute_kind="polars",
+    group_name="raw",
 )
-def yellow_taxi_fact(context, raw_df: pl.DataFrame) -> None:
+def yellow_taxi_cleansed(context, raw_df: pl.DataFrame) -> None:
     partition_period = context.asset_partition_key_for_output()
     df = filter_polars_df(raw_df, is_clean=True)
     fs = s3fs.S3FileSystem()
     destination = get_path_to_write_s3(
         bucket_name=bucket_name,
         key=redefine_dir_for_parquets(
-            assets_dir_for_parquets, file_name=f"yellow_taxi_clean_{partition_period}"
+            assets_dir_for_clean_parquets,
+            file_name=f"yellow_taxi_clean_{partition_period}",
         ),
     )
 
@@ -90,7 +105,10 @@ def yellow_taxi_fact(context, raw_df: pl.DataFrame) -> None:
 
 
 @asset(
-    partitions_def=partitions_def, ins={"raw_df": AssetIn("yellow_taxi_raw_data_frame")}
+    partitions_def=partitions_def,
+    ins={"raw_df": AssetIn("yellow_taxi_raw_data_frame")},
+    compute_kind="polars",
+    group_name="raw",
 )
 def yellow_taxi_dirty(context, raw_df: pl.DataFrame) -> None:
     partition_period = context.asset_partition_key_for_output()
@@ -109,17 +127,8 @@ def yellow_taxi_dirty(context, raw_df: pl.DataFrame) -> None:
 
     context.add_output_metadata(
         metadata={
-            "num_records": df.height,  # Metadata can be any key-value pair
+            "num_records": df.height,
             "preview": MetadataValue.md(df.head().to_pandas().to_markdown(index=False)),
             "statistics": MetadataValue.md(df.describe().to_pandas().to_markdown()),
-            # The `MetadataValue` class has useful static methods to build Metadata
         }
     )
-
-
-extract_and_cleanse_assets = [
-    yellow_tripdata_raw_parquet,
-    yellow_taxi_raw_data_frame,
-    yellow_taxi_fact,
-    yellow_taxi_dirty,
-]

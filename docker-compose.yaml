@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: ./Dockerfile_dagster
     entrypoint:
-      - dagit
+      - dagster-webserver
       - -h
       - "0.0.0.0"
       - -p
@@ -39,11 +39,10 @@ services:
       DAGSTER_PG_PASSWORD: "postgres_password"
       DAGSTER_PG_DB: "postgres_db"
       DAGSTER_PG_HOST: postgresql
+      DAGSTER_DBT_PARSE_PROJECT_ON_LOAD: 1
 
     volumes: # Make docker client accessible so we can terminate containers from dagit
       - /var/run/docker.sock:/var/run/docker.sock
-      - /Users/tomaspeluritis/dagster_rabbit_hole/dwh:/opt/dagster/dagster_home/dwh
-      - /Users/tomaspeluritis/dagster_rabbit_hole/profiles.yml:/opt/dagster/dagster_home/profiles.yml
     networks:
       - docker_example_network
     depends_on:
@@ -65,14 +64,14 @@ services:
         DAGSTER_PG_PASSWORD: "postgres_password"
         DAGSTER_PG_DB: "postgres_db"
         DAGSTER_PG_HOST: postgresql
+        DAGSTER_DBT_PARSE_PROJECT_ON_LOAD: 1
       volumes: # Make docker client accessible so we can launch containers using host docker
         - /var/run/docker.sock:/var/run/docker.sock
-        - /Users/tomaspeluritis/dagster_rabbit_hole/dwh:/opt/dagster/dagster_home/dwh
-        - /Users/tomaspeluritis/dagster_rabbit_hole/profiles.yml:/opt/dagster/dagster_home/profiles.yml
       networks:
         - docker_example_network
       depends_on:
         - postgresql
+
   dagster_grpc_server:
     build:
       context: .
@@ -85,13 +84,16 @@ services:
       DAGSTER_PG_PASSWORD: "postgres_password"
       DAGSTER_PG_DB: "postgres_db"
       DAGSTER_PG_HOST: postgresql
+      DAGSTER_DBT_PARSE_PROJECT_ON_LOAD: 1
     volumes:
       - /Users/tomaspeluritis/dagster_rabbit_hole/dagster-demo:/opt/dagster/dagster_home/dagster-demo
+      - /Users/tomaspeluritis/dagster_rabbit_hole/dwh:/opt/dagster/dagster_home/dwh
+      - /Users/tomaspeluritis/dagster_rabbit_hole/profiles.yml:/opt/dagster/dagster_home/profiles.yml
     ports:
-      - 4000:4000
+      - 4266:4266
     networks:
       - docker_example_network
-    command: dagster api grpc --module-name dagster-demo -h 0.0.0.0 -p 4000
+    command: dagster code-server start --module-name dagster-demo -h 0.0.0.0 -p 4266
     restart: unless-stopped
 
 networks:

@@ -1,11 +1,14 @@
-dagit
 dagster
+dagit
 dagster-postgres
 dagster-docker
 dagster-aws
+dagster-dbt
 dbt-core
-dbt-postgres
+dbt-snowflake
 dagster-polars
 dagster-graphql
 pandas
 s3fs
+snowflake-sqlalchemy
+matplotlib
